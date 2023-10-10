@@ -3,9 +3,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   fetchNoteCollection,
   fetchNoteDetail,
+  sendCreateNoteRequest,
 } from '../../service/noteService';
 
-import type { Note } from '../../types/API';
+import type { Note, NoteCreationData } from '../../types/API';
 import type { RootState } from '../store';
 
 export const getNoteCollection = createAsyncThunk(
@@ -24,16 +25,32 @@ export const getNoteDetail = createAsyncThunk(
   }
 );
 
+export const createNote = createAsyncThunk(
+  'note/createNote',
+  async (noteData: NoteCreationData, thunkAPI) => {
+    try {
+      const { token } = (thunkAPI.getState() as RootState).authentication.user;
+      const createdNote = await sendCreateNoteRequest(noteData, { token });
+
+      return createdNote;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
+
 interface NoteState {
   collection: Note[];
-  detail: Note | null;
+  detail: Note;
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
+  created: Note | undefined;
 }
 
 const initialState: NoteState = {
   collection: [],
   detail: {} as Note,
   loading: 'idle',
+  created: undefined,
 };
 
 export const noteSlice = createSlice({
@@ -61,8 +78,18 @@ export const noteSlice = createSlice({
     builder.addCase(getNoteDetail.rejected, (state) => {
       state.loading = 'failed';
     });
+    builder.addCase(createNote.pending, (state) => {
+      state.loading = 'pending';
+    });
+    builder.addCase(createNote.fulfilled, (state, action) => {
+      state.loading = 'succeeded';
+      state.created = action.payload;
+    });
+    builder.addCase(createNote.rejected, (state) => {
+      state.loading = 'failed';
+    });
   },
 });
 
-export const selectNoteCollection = (state: RootState) => state.note;
+export const selectNote = (state: RootState) => state.note;
 export default noteSlice.reducer;

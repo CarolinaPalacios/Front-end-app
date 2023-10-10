@@ -1,10 +1,15 @@
+import { Routes, Route } from 'react-router-dom';
+import Home from './views/Home';
+import NoteDetail from './components/NoteDetail';
+
 import './App.css';
 
 const App = () => {
   return (
-    <>
-      <h1>Hello Vite!</h1>
-    </>
+    <Routes>
+      <Route path='/' element={<Home />} />
+      <Route path='/note/:id' element={<NoteDetail />} />
+    </Routes>
   );
 };
 

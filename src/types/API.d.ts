@@ -4,7 +4,18 @@ export interface Note {
   content: string;
   date: string;
   important: boolean;
-  userId: string;
+  user: {
+    id: string;
+    username: string;
+    name: string;
+  };
+}
+
+export interface NoteCreationData {
+  token: string;
+  title: string;
+  content: string;
+  important: boolean;
 }
 
 export interface User {
@@ -12,4 +23,5 @@ export interface User {
   username: string;
   name: string;
   notes: Note[];
+  token: string;
 }
