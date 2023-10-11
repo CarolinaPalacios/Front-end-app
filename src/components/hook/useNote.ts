@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hook/useStore';
 import {
   createNote,
+  deleteNote,
   getNoteCollection,
   getNoteDetail,
   selectNote,
@@ -76,6 +77,29 @@ export const useCreateNote = () => {
   return {
     created,
     createNoteHandler,
+    isLoading,
+    isError,
+    isSuccess,
+    isUninitialized,
+  };
+};
+
+export const useDeleteNote = () => {
+  const dispatch = useAppDispatch();
+  const { collection, loading } = useAppSelector(selectNote);
+
+  const deleteNoteHandler = (id: string) => {
+    dispatch(deleteNote(id));
+  };
+
+  const isUninitialized = loading === 'idle';
+  const isLoading = loading === 'pending';
+  const isError = loading === 'failed';
+  const isSuccess = loading === 'succeeded';
+
+  return {
+    collection,
+    deleteNoteHandler,
     isLoading,
     isError,
     isSuccess,

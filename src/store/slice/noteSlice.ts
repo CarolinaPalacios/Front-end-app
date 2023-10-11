@@ -4,6 +4,7 @@ import {
   fetchNoteCollection,
   fetchNoteDetail,
   sendCreateNoteRequest,
+  sendDeleteNoteRequest,
 } from '../../service/noteService';
 
 import type { Note, NoteCreationData } from '../../types/API';
@@ -33,6 +34,19 @@ export const createNote = createAsyncThunk(
       const createdNote = await sendCreateNoteRequest(noteData, { token });
 
       return createdNote;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
+
+export const deleteNote = createAsyncThunk(
+  'note/deleteNote',
+  async (id: string, thunkAPI) => {
+    try {
+      const { token } = (thunkAPI.getState() as RootState).authentication.user;
+
+      await sendDeleteNoteRequest(id, { token });
     } catch (error) {
       console.error(error);
     }
@@ -84,8 +98,21 @@ export const noteSlice = createSlice({
     builder.addCase(createNote.fulfilled, (state, action) => {
       state.loading = 'succeeded';
       state.created = action.payload;
+      state.collection.push(action.payload!);
     });
     builder.addCase(createNote.rejected, (state) => {
+      state.loading = 'failed';
+    });
+    builder.addCase(deleteNote.pending, (state) => {
+      state.loading = 'pending';
+    });
+    builder.addCase(deleteNote.fulfilled, (state) => {
+      state.loading = 'succeeded';
+      state.collection = state.collection.filter(
+        (note) => note.id !== state.detail.id
+      );
+    });
+    builder.addCase(deleteNote.rejected, (state) => {
       state.loading = 'failed';
     });
   },

@@ -35,3 +35,15 @@ export const sendCreateNoteRequest = async (
   );
   return data;
 };
+
+export const sendDeleteNoteRequest = async (
+  id: string,
+  { token }: { token: string }
+) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  await axios.delete(`${VITE_BASE_URL}/notes/${id}`, config);
+};

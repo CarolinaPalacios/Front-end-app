@@ -22,6 +22,8 @@ export const useAuthentication = () => {
       );
       const user = response.payload;
 
+      window.localStorage.setItem('user', JSON.stringify(user));
+
       setUser(user);
       setUsername('');
       setPassword('');
@@ -30,13 +32,13 @@ export const useAuthentication = () => {
       throw error;
     }
   };
-
   return {
     username,
     setUsername,
     password,
     setPassword,
     user,
+    setUser,
     handleLogin,
   };
 };
