@@ -5,6 +5,7 @@ import {
   fetchNoteDetail,
   sendCreateNoteRequest,
   sendDeleteNoteRequest,
+  sendUpdateNoteRequest,
 } from '../../service/noteService';
 
 import type { Note, NoteCreationData } from '../../types/API';
@@ -47,6 +48,32 @@ export const deleteNote = createAsyncThunk(
       const { token } = (thunkAPI.getState() as RootState).authentication.user;
 
       await sendDeleteNoteRequest(id, { token });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
+
+export const updateNote = createAsyncThunk(
+  'note/updateNote',
+  async (
+    { id, updatedData }: { id: string; updatedData: Partial<Note> },
+    thunkAPI
+  ) => {
+    console.log(updatedData);
+    try {
+      const { token } = (thunkAPI.getState() as RootState).authentication.user;
+
+      const existingNote = await fetchNoteDetail(id);
+
+      const updatedNote = {
+        ...existingNote,
+        ...updatedData,
+      };
+      const response = await sendUpdateNoteRequest(id, updatedNote, { token });
+      console.log(response);
+
+      return { id, updatedNote: response };
     } catch (error) {
       console.error(error);
     }
@@ -113,6 +140,26 @@ export const noteSlice = createSlice({
       );
     });
     builder.addCase(deleteNote.rejected, (state) => {
+      state.loading = 'failed';
+    });
+    builder.addCase(updateNote.pending, (state) => {
+      state.loading = 'pending';
+    });
+    builder.addCase(updateNote.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.loading = 'succeeded';
+        state.collection = state.collection.map((note) => {
+          if (note.id === action.payload?.id) {
+            return { ...note, ...action.payload.updatedNote };
+          }
+          return note;
+        });
+        if (state.detail.id === action.payload.id) {
+          state.detail = { ...state.detail, ...action.payload.updatedNote };
+        }
+      }
+    });
+    builder.addCase(updateNote.rejected, (state) => {
       state.loading = 'failed';
     });
   },

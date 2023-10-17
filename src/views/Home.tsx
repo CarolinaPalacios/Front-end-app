@@ -5,24 +5,16 @@ import NoteForm from '../components/NoteForm';
 import { useAuthentication } from '../components/hook/useAuthentication';
 
 const Home = () => {
-  const { collection, isLoading } = useGetNoteCollection();
+  const { collection } = useGetNoteCollection();
   const { user } = useAuthentication();
 
   return (
     <>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <LoginForm />
-          {user?.token ? (
-            <NoteForm token={user.token} />
-          ) : (
-            <p>Please log in to create a note</p>
-          )}
-          <NoteList collection={collection} />
-        </>
-      )}
+      <>
+        <h1>Notes</h1>
+        {user?.token ? <NoteForm token={user.token} /> : <LoginForm />}
+        <NoteList collection={collection} />
+      </>
     </>
   );
 };

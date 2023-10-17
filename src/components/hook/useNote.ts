@@ -5,8 +5,10 @@ import {
   deleteNote,
   getNoteCollection,
   getNoteDetail,
+  updateNote,
   selectNote,
 } from '../../store/slice/noteSlice';
+import { Note } from '../../types/API';
 
 export const useGetNoteCollection = () => {
   const dispatch = useAppDispatch();
@@ -34,7 +36,6 @@ export const useGetNoteCollection = () => {
 export const useGetNoteDetail = (id: string) => {
   const dispatch = useAppDispatch();
   const { detail, loading } = useAppSelector(selectNote);
-  console.log(detail);
 
   useEffect(() => {
     dispatch(getNoteDetail(id));
@@ -100,6 +101,34 @@ export const useDeleteNote = () => {
   return {
     collection,
     deleteNoteHandler,
+    isLoading,
+    isError,
+    isSuccess,
+    isUninitialized,
+  };
+};
+
+export const useUpdateNote = () => {
+  const dispatch = useAppDispatch();
+  const { detail, loading } = useAppSelector(selectNote);
+
+  const toggleImportance = (id: string) => {
+    dispatch(updateNote({ id, updatedData: { important: !detail.important } }));
+  };
+
+  const updateNoteData = (id: string, updatedData: Partial<Note>) => {
+    dispatch(updateNote({ id, updatedData }));
+  };
+
+  const isUninitialized = loading === 'idle';
+  const isLoading = loading === 'pending';
+  const isError = loading === 'failed';
+  const isSuccess = loading === 'succeeded';
+
+  return {
+    detail,
+    toggleImportance,
+    updateNoteData,
     isLoading,
     isError,
     isSuccess,

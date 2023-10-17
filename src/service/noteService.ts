@@ -13,7 +13,6 @@ export const fetchNoteDetail = async (id: string) => {
   const { data }: { data: Note } = await axios.get(
     `${VITE_BASE_URL}/notes/${id}`
   );
-  console.log(data);
 
   return data;
 };
@@ -46,4 +45,24 @@ export const sendDeleteNoteRequest = async (
     },
   };
   await axios.delete(`${VITE_BASE_URL}/notes/${id}`, config);
+};
+
+export const sendUpdateNoteRequest = async (
+  id: string,
+  updatedData: Partial<Note>,
+  { token }: { token: string }
+) => {
+  console.log(updatedData);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const updatedNote = await axios.put(
+    `${VITE_BASE_URL}/notes/${id}`,
+    updatedData,
+    config
+  );
+  console.log(updatedNote);
+  return updatedNote.data;
 };

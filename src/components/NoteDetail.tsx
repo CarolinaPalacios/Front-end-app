@@ -1,25 +1,48 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDeleteNote, useGetNoteDetail } from './hook/useNote';
+import { useState } from 'react';
+import { useDeleteNote, useGetNoteDetail, useUpdateNote } from './hook/useNote';
+// import Togglable from './Togglable';
+import { Note } from '../types/API';
 
 const NoteDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { detail, isLoading, isError } = useGetNoteDetail(id!);
+  const { detail } = useGetNoteDetail(id!);
   const { deleteNoteHandler } = useDeleteNote();
+  const { toggleImportance, updateNoteData } = useUpdateNote();
 
-  const handleDelete = async (id: string) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(detail.title || '');
+  const [content, setContent] = useState(detail.content || '');
+
+  const handleToggleImportance = () => {
+    toggleImportance(detail.id);
+  };
+
+  const handleSaveChanges = () => {
+    const updatedData: Partial<Note> = {};
+    if (title !== detail.title) {
+      updatedData.title = title;
+    }
+    if (content !== detail.content) {
+      updatedData.content = content;
+    }
+    updateNoteData(detail.id, updatedData);
+    console.log(updatedData);
+    setIsEditing(false);
+  };
+  const handleDelete = (id: string) => {
     try {
-      await deleteNoteHandler(id);
+      deleteNoteHandler(id);
       navigate('/');
     } catch (error) {
       console.error(error);
     }
   };
+
   const important = detail.important
     ? 'bg-green-900'
     : 'bg-red-400 text-red-900';
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error...</p>;
 
   return (
     <div>
@@ -52,17 +75,43 @@ const NoteDetail = () => {
           ></path>
         </svg>
       </button>
-      <h1>{detail.title}</h1>
-      <p>{detail.content}</p>
-      <p>
-        {detail.date?.split('T')[0]} {detail.date?.split('T')[1].split('.')[0]}
-      </p>
-      <p
-        className={`text-xs font-semibold mr-2 px-2.5 py-0.5 rounded ${important}`}
-      >
-        {detail.important ? 'Important' : 'Not Important'}
-      </p>
-      <p>{detail.user?.username}</p>
+
+      <div>
+        {isEditing ? (
+          <div>
+            <input
+              type='text'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+            <button onClick={handleToggleImportance}>
+              {detail.important ? 'Not Important' : 'Important'}
+            </button>
+            <button onClick={handleSaveChanges}>Save</button>
+            <button onClick={() => setIsEditing(false)}>Cancel</button>
+          </div>
+        ) : (
+          <div>
+            <h1>{detail.title}</h1>
+            <p>{detail.content}</p>
+            <p>
+              {detail.date?.split('T')[0]}{' '}
+              {detail.date?.split('T')[1].split('.')[0]}
+            </p>
+            <p
+              className={`text-xs font-semibold mr-2 px-2.5 py-0.5 rounded ${important}`}
+            >
+              {detail.important ? 'Important' : 'Not Important'}
+            </p>
+            <p>{detail.user?.username}</p>
+            <button onClick={() => setIsEditing(true)}>Edit</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
